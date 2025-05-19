@@ -1,0 +1,32 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Diretórios do sistema
+.DS_Store
+Thumbs.db
+
+# Dependências
+/node_modules
+/bower_components
+
+# Build directories
+/build
+/android/app/build
+/ios/Pods
+
+# Arquivos de configuração do Firebase
+android/app/google-services.json
+ios/GoogleService-Info.plist
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Arquivos de ambiente
+.env
+
+# Arquivos de configuração do Allai
+.allai/workspace.db
