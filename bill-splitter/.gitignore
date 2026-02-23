@@ -17,6 +17,10 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+GoogleService-Info.plist
+google-services.json
+android/app/google-services.json
+ios/BillSplitter/GoogleService-Info.plist
 
 # Metro
 .metro-health-check*
