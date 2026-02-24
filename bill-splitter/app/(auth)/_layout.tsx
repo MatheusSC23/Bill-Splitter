@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-
-export default function AuthLayout() {
+const Layout = () => {
   return <Stack />;
-}
+};
+export default Layout;
