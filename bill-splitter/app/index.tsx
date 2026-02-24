@@ -2,14 +2,13 @@ import { useState, useTransition } from "react";
 import {
   StyleSheet,
   TextInput,
-  Pressable,
-  ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
 } from "react-native";
 import auth from "@react-native-firebase/auth";
 
 import { Text, View } from "@/components/Themed";
+import Button from "@/components/Button";
 
 export default function Index() {
   const [email, setEmail] = useState("");
@@ -94,25 +93,20 @@ export default function Index() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <Pressable
-            style={styles.primaryButton}
+          <Button
+            title="Sign in"
+            variant="primary"
             onPress={handleSignIn}
-            disabled={isPending}
-          >
-            {isPending ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.primaryButtonText}>Sign in</Text>
-            )}
-          </Pressable>
+            loading={isPending}
+          />
 
-          <Pressable
-            style={styles.linkButton}
+          <Button
+            title="Create an account"
+            variant="link"
             onPress={handleSignUp}
             disabled={isPending}
-          >
-            <Text style={styles.linkText}>Create an account</Text>
-          </Pressable>
+            style={styles.linkButton}
+          />
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -162,23 +156,7 @@ const styles = StyleSheet.create({
     color: "#D33A2C",
     marginBottom: 12,
   },
-  primaryButton: {
-    backgroundColor: "#111111",
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    fontSize: 16,
-  },
   linkButton: {
     marginTop: 14,
-    alignItems: "center",
-  },
-  linkText: {
-    color: "#111111",
-    fontWeight: "600",
   },
 });
