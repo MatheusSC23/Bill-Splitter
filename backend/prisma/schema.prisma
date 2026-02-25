@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  contacts          Contact[]
+  billsCreated      Bill[]               @relation("BillsCreated")
+  billParticipants  BillParticipant[]
+  liveParticipants  LiveSessionParticipant[]
+
+  @@map("users")
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  name      String
+  phone     String?  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user              User              @relation(fields: [userId], references: [id])
+  billParticipants  BillParticipant[]
+
+  @@index([userId])
+  @@map("contacts")
+}
+
+model Bill {
+  id               String   @id @default(cuid())
+  createdById      String   @map("created_by")
+  placeName        String   @map("place_name")
+  date             DateTime
+  totalWithoutFees Decimal  @map("total_without_fees") @db.Decimal(10, 2)
+  totalWithFees    Decimal  @map("total_with_fees") @db.Decimal(10, 2)
+  serviceFeePercent Decimal @map("service_fee_percent") @db.Decimal(5, 2)
+  tipPercent        Decimal @map("tip_percent") @db.Decimal(5, 2)
+  extraFeeValue     Decimal @map("extra_fee_value") @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  createdBy      User               @relation("BillsCreated", fields: [createdById], references: [id])
+  participants   BillParticipant[]
+  items          Item[]
+  payments       BillPayment[]
+  settlements    BillSettlement[]
+  liveSessions   LiveSession[]
+
+  @@index([createdById])
+  @@map("bills")
+}
+
+model BillParticipant {
+  id           String  @id @default(cuid())
+  billId       String  @map("bill_id")
+  userId       String? @map("user_id")
+  contactId    String? @map("contact_id")
+  displayName  String  @map("display_name")
+
+  bill         Bill     @relation(fields: [billId], references: [id])
+  user         User?    @relation(fields: [userId], references: [id])
+  contact      Contact? @relation(fields: [contactId], references: [id])
+
+  itemConsumers  ItemConsumer[]
+  payments       BillPayment[]
+  settlements    BillSettlement[]
+
+  @@index([billId])
+  @@index([userId])
+  @@index([contactId])
+  @@map("bill_participants")
+}
+
+model Item {
+  id        String   @id @default(cuid())
+  billId    String   @map("bill_id")
+  name      String
+  price     Decimal  @db.Decimal(10, 2)
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  bill          Bill           @relation(fields: [billId], references: [id])
+  itemConsumers ItemConsumer[]
+
+  @@index([billId])
+  @@map("items")
+}
+
+model ItemConsumer {
+  id            String @id @default(cuid())
+  itemId        String @map("item_id")
+  participantId String @map("participant_id")
+
+  item          Item            @relation(fields: [itemId], references: [id])
+  participant   BillParticipant @relation(fields: [participantId], references: [id])
+
+  @@index([itemId])
+  @@index([participantId])
+  @@map("item_consumers")
+}
+
+model BillPayment {
+  id            String  @id @default(cuid())
+  billId        String  @map("bill_id")
+  participantId String  @map("participant_id")
+  paidValue     Decimal @map("paid_value") @db.Decimal(10, 2)
+
+  bill         Bill            @relation(fields: [billId], references: [id])
+  participant  BillParticipant @relation(fields: [participantId], references: [id])
+
+  @@index([billId])
+  @@index([participantId])
+  @@map("bill_payments")
+}
+
+model BillSettlement {
+  id            String   @id @default(cuid())
+  billId        String   @map("bill_id")
+  participantId String   @map("participant_id")
+  amountDue     Decimal  @map("amount_due") @db.Decimal(10, 2)
+  generatedAt   DateTime @default(now()) @map("generated_at")
+
+  bill        Bill            @relation(fields: [billId], references: [id])
+  participant BillParticipant @relation(fields: [participantId], references: [id])
+
+  @@index([billId])
+  @@index([participantId])
+  @@map("bill_settlements")
+}
+
+model LiveSession {
+  id          String   @id @default(cuid())
+  billId      String   @map("bill_id")
+  sessionCode String   @unique @map("session_code")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  bill         Bill                     @relation(fields: [billId], references: [id])
+  participants LiveSessionParticipant[]
+
+  @@index([billId])
+  @@map("live_sessions")
+}
+
+model LiveSessionParticipant {
+  id         String   @id @default(cuid())
+  sessionId  String   @map("session_id")
+  userId     String   @map("user_id")
+  joinedAt   DateTime @default(now()) @map("joined_at")
+
+  session    LiveSession @relation(fields: [sessionId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@index([sessionId])
+  @@index([userId])
+  @@map("live_session_participants")
+}
